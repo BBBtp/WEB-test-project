@@ -38,10 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'corsheaders',
     'wells',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -87,11 +90,14 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": default_db_engine,
-            "NAME": os.getenv("DB_NAME", "test_db"),
-            "USER": os.getenv("DB_USER", "postgres"),
-            "PASSWORD": os.getenv("DB_PASSWORD", "postgres1234"),
+            "NAME": os.getenv("DB_NAME", "wells"),
+            "USER": os.getenv("DB_USER", "wells_user"),
+            "PASSWORD": os.getenv("DB_PASSWORD", "1"),
             "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-            "PORT": os.getenv("DB_PORT", "5455"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+            "OPTIONS": {
+                "client_encoding": "UTF8",
+            },
         }
     }
 
@@ -128,15 +134,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR / "wells" / "static",
-]
-
-MINIO_ENDPOINT = os.getenv('MINIO_ENDPOINT', 'minio:9000')
-MINIO_ACCESS_KEY = 'minioadmin'
-MINIO_SECRET_KEY = 'minioadmin123'
-MINIO_BUCKET_NAME = 'medical-images'
-MINIO_SECURE = False
+_app_static = BASE_DIR / "wells" / "static"
+STATICFILES_DIRS = [p for p in [_app_static] if p.exists()]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -148,3 +147,19 @@ TIME_ZONE = 'Europe/Moscow'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# MinIO settings
+MINIO_ENDPOINT = os.getenv('MINIO_ENDPOINT', 'minio:9000')
+MINIO_ACCESS_KEY = 'minioadmin'
+MINIO_SECRET_KEY = 'minioadmin123'
+MINIO_BUCKET_NAME = 'medical-images'
+MINIO_SECURE = False
