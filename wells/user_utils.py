@@ -7,12 +7,12 @@ class UserSingleton:
     """Singleton для получения зафиксированного пользователя-создателя"""
     _instance = None
     _creator_user = None
-    
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(UserSingleton, cls).__new__(cls)
         return cls._instance
-    
+
     def get_creator_user(self):
         """Получить пользователя-создателя (зафиксированного)"""
         if self._creator_user is None:

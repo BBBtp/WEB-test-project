@@ -5,6 +5,7 @@ from minio import Minio
 from minio.error import S3Error
 import json
 
+
 def get_minio_client():
     """Получить клиент MinIO"""
     return Minio(
@@ -13,6 +14,7 @@ def get_minio_client():
         secret_key=settings.MINIO_SECRET_KEY,
         secure=settings.MINIO_SECURE
     )
+
 
 def ensure_bucket_public(client, bucket_name):
     """Делает бакет публичным для чтения объектов"""
@@ -27,13 +29,14 @@ def ensure_bucket_public(client, bucket_name):
     }
     client.set_bucket_policy(bucket_name, json.dumps(policy))
 
+
 def generate_image_name(original_filename):
     """Генерировать имя файла на латинице"""
     # Получаем расширение файла
     _, ext = os.path.splitext(original_filename)
     if not ext:
         ext = '.jpg'
-    
+
     # Генерируем уникальное имя на латинице
     unique_id = str(uuid.uuid4())
     return f"{unique_id}{ext}"
@@ -55,7 +58,7 @@ def upload_image(file, image_name):
             file,
             length=-1,
             part_size=10 * 1024 * 1024,
-            content_type = "image/png"
+            content_type="image/png"
         )
         return True
     except S3Error as e:

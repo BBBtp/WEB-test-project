@@ -36,31 +36,45 @@ services:
       timeout: 20s
       retries: 3
 
+  redis:
+    image: redis:7-alpine
+    container_name: wells_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
   web:
-      build: .
-      container_name: wells_web
-      ports:
-        - "8000:8000"
-      environment:
-        - DB_ENGINE=django.db.backends.postgresql
-        - DB_NAME=wells
-        - DB_USER=wells_user
-        - DB_PASSWORD=1
-        - DB_HOST=postgres
-        - DB_PORT=5432
-      depends_on:
-        postgres:
-          condition: service_healthy
-        minio:
-          condition: service_healthy
-      volumes:
-        - .:/app
-      command: >
-              sh -c "python manage.py makemigrations &&
-                     python manage.py migrate &&
-                     echo 'from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username=\"admin\").exists() or User.objects.create_superuser(\"admin\", \"admin@example.com\", \"admin\")' | python manage.py shell &&
-                     python manage.py runserver 0.0.0.0:8000"
+    build: .
+    container_name: wells_web
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=wells
+      - DB_USER=wells_user
+      - DB_PASSWORD=1
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - .:/app
+    command: >
+            sh -c "python manage.py makemigrations &&
+                   python manage.py migrate &&
+                   echo 'from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username=\"admin\").exists() or User.objects.create_superuser(\"admin\", \"admin@example.com\", \"admin\")' | python manage.py shell &&
+                   python manage.py runserver 0.0.0.0:8000"
 
 volumes:
   postgres_data:
   minio_data:
+  redis_data:
