@@ -1,0 +1,15 @@
+{% extends 'wells/base.html' %}
+
+{% block title %}Оценка удалена - Wells Method{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="assessment-result">
+        <h2>Оценка №{{ assessment.id }} удалена</h2>
+        <div class="info-message">
+            <p>Эта оценка переведена в статус "Удалена" и доступна только для просмотра.</p>
+        </div>
+        <a href="{% url 'symptoms_list' %}" class="view-assessment-btn">Вернуться к симптомам</a>
+    </div>
+</div>
+{% endblock %}

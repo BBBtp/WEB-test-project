@@ -1,0 +1,72 @@
+{% extends 'wells/base.html' %}
+
+{% block title %}Результат оценки - Wells Method{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="assessment-result">
+        <h2>Результат оценки риска ТГВ/ТЭЛА</h2>
+
+        <!-- Общий результат -->
+        <div class="result-summary {{ risk_class }}">
+            <div class="total-score">
+                <span class="score-label">Общий балл:</span>
+                <span class="score-value">{{ total_score }}</span>
+            </div>
+            <div class="risk-level">
+                <span class="risk-label">Уровень риска:</span>
+                <span class="risk-value">{{ risk_level }}</span>
+            </div>
+        </div>
+
+        <!-- Рекомендации -->
+        <div class="recommendation-block">
+            <h3>Рекомендации</h3>
+            <p>{{ recommendation }}</p>
+        </div>
+
+        <!-- Список выбранных симптомов -->
+        <div class="selected-symptoms">
+            <h3>Выбранные симптомы</h3>
+            {% for symptom in selected_symptoms %}
+            <div class="symptom-row">
+                <img src="{{ symptom.image_url }}" alt="{{ symptom.name }}" class="symptom-thumb">
+                <div class="symptom-details">
+                    <span class="symptom-name">{{ symptom.name }}</span>
+                    <span class="symptom-category">{{ symptom.category }}</span>
+                    <span class="symptom-points">{{ symptom.points }} баллов</span>
+                </div>
+                <div class="m2m-field">
+                    <label>Количество:</label>
+                    <span>{{ symptom.quantity }}</span>
+                </div>
+                <div class="symptom-actions">
+                    <form method="post" action="{% url 'remove_symptom_from_assessment' assessment.id symptom.item_id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-btn">Удалить</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Дополнительная информация -->
+        <div class="additional-info">
+            <h3>Интерпретация шкалы Уэллса</h3>
+            <ul>
+                <li><strong>0-2 балла:</strong> Низкий риск (вероятность &lt; 15%)</li>
+                <li><strong>3-6 баллов:</strong> Средний риск (вероятность ~30%)</li>
+                <li><strong>&gt;6 баллов:</strong> Высокий риск (вероятность &gt; 60%)</li>
+            </ul>
+        </div>
+
+        <!-- Кнопка логического удаления оценки (RAW SQL в контроллере) -->
+        <div class="danger-zone">
+            <form method="post" action="{% url 'delete_assessment' assessment.id %}">
+                {% csrf_token %}
+                <button type="submit" class="delete-btn">Удалить оценку</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

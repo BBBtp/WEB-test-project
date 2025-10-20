@@ -1,0 +1,36 @@
+{% extends 'wells/base.html' %}
+
+{% block title %}{{ symptom.name }} - Wells Method{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="symptom-detail">
+        <div class="detail-image-section">
+            <img src="{{ symptom.image_url }}" alt="{{ symptom.name }}" class="detail-image">
+        </div>
+
+        <div class="detail-info-section">
+            <h2>{{ symptom.name }}</h2>
+            <p class="category-badge">{{ symptom.category }}</p>
+
+            <div class="description-block">
+                <h3>Описание</h3>
+                <p>{{ symptom.description }}</p>
+            </div>
+
+            <div class="risk-factor-block">
+                <h3>Факторы риска</h3>
+                <p>{{ symptom.risk_factor }}</p>
+            </div>
+
+            <div class="points-block">
+                <h3>Баллы по шкале Уэллса</h3>
+                <div class="points-display">
+                    <span class="big-points">{{ symptom.points }}</span>
+                    <span>{{ symptom.points|pluralize:"балл,балла,баллов" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

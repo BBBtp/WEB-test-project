@@ -1,0 +1,64 @@
+{% extends 'wells/base.html' %}
+
+{% block title %}Симптомы - Wells Method{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Блок поиска -->
+    <div class="search-section">
+        <form method="get" action="{% url 'symptoms_list' %}">
+            <input type="text"
+                   name="search"
+                   value="{{ search_query }}"
+                   placeholder="Поиск по названию или категории..."
+                   class="search-input">
+            <button type="submit" class="search-btn">Искать</button>
+        </form>
+    </div>
+
+    <!-- Карточка текущей оценки -->
+    <div class="assessment-card">
+        <h3>Текущая оценка</h3>
+        <p>Выбрано симптомов: <span class="count">{{ symptoms_count }}</span></p>
+        {% if assessment %}
+            <a href="{% url 'assessment_detail' assessment.id %}" class="view-assessment-btn">
+                Просмотреть результат
+            </a>
+        {% else %}
+            <span class="view-assessment-btn disabled">Недоступно</span>
+        {% endif %}
+    </div>
+
+    <!-- Список симптомов -->
+    <div class="symptoms-grid">
+        {% for symptom in symptoms %}
+        <div class="symptom-card">
+            <a href="{% url 'symptom_detail' symptom.id %}" class="card-link">
+                <img src="{{ symptom.image_url }}" alt="{{ symptom.name }}" class="symptom-image">
+                <div class="symptom-info">
+                    <h3>{{ symptom.name }}</h3>
+                    <p class="category">{{ symptom.category }}</p>
+                    <div class="points">
+                        <span class="points-value">{{ symptom.points }}</span>
+                        <span class="points-label">баллов</span>
+                    </div>
+                </div>
+            </a>
+            {% if request.user.is_authenticated %}
+            <div class="card-action">
+                <form method="post" action="{% url 'add_symptom_to_assessment' symptom.id %}" class="add-to-assessment-form">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    {% csrf_token %}
+                    <button type="submit" class="add-btn">Добавить</button>
+                </form>
+            </div>
+            {% else %}
+            <div class="card-action">
+                <span class="add-btn disabled">Войдите, чтобы добавить</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Wells Method - Оценка риска тромбоэмболии{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav-wrapper">
+                <div class="header-title">
+                    <a href="{% url 'symptoms_list' %}" class="logo-link">
+                        <div class="logo-section">
+                            <div class="logo-icon">
+                                <img src="http://localhost:9000/medical-images/logo.png" alt="Wells Method Logo" class="logo-img">
+                            </div>
+                            <div class="title-group">
+                                <h1>Wells Method</h1>
+                                <p class="subtitle">Клиническая оценка вероятности ТГВ/ТЭЛА</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="nav-menu"></div>
+                <div class="header-actions"></div>
+            </nav>
+        </div>
+    </header>
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
