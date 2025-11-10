@@ -87,10 +87,10 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": default_db_engine,
-            "NAME": os.getenv("DB_NAME", "test_db"),
-            "USER": os.getenv("DB_USER", "postgres"),
-            "PASSWORD": os.getenv("DB_PASSWORD", "postgres1234"),
-            "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+            "NAME": os.getenv("DB_NAME", "wells"),
+            "USER": os.getenv("DB_USER", "wells_user"),
+            "PASSWORD": os.getenv("DB_PASSWORD", "1"),
+            "HOST": os.getenv("DB_HOST", "postgres"),
             "PORT": os.getenv("DB_PORT", "5455"),
         }
     }

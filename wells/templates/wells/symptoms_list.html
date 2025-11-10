@@ -3,31 +3,36 @@
 {% block title %}Симптомы - Wells Method{% endblock %}
 
 {% block content %}
+
 <div class="container">
+
     <!-- Блок поиска -->
-    <div class="search-section">
+   <div class="search-section">
         <form method="get" action="{% url 'symptoms_list' %}">
             <input type="text"
                    name="search"
                    value="{{ search_query }}"
-                   placeholder="Поиск по названию или категории..."
+                   placeholder="Поиск симптомов DVT или факторов риска..."
                    class="search-input">
-            <button type="submit" class="search-btn">Искать</button>
+            <button type="submit" class="search-btn">Искать симптомы</button>
         </form>
     </div>
 
     <!-- Карточка текущей оценки -->
-    <div class="assessment-card">
-        <h3>Текущая оценка</h3>
-        <p>Выбрано симптомов: <span class="count">{{ symptoms_count }}</span></p>
-        {% if assessment %}
-            <a href="{% url 'assessment_detail' assessment.id %}" class="view-assessment-btn">
-                Просмотреть результат
-            </a>
-        {% else %}
-            <span class="view-assessment-btn disabled">Недоступно</span>
-        {% endif %}
+    <div class="assessment-wrapper">
+      {% if assessment %}
+        <a href="{% url 'assessment_detail' assessment.id %}" class="assessment-icon" title="Просмотреть оценку">
+          🩺
+          <span class="assessment-badge">{{ symptoms_count }}</span>
+        </a>
+      {% else %}
+        <span class="assessment-icon disabled" title="Оценка недоступна">
+          🩺
+
+        </span>
+      {% endif %}
     </div>
+
 
     <!-- Список симптомов -->
     <div class="symptoms-grid">

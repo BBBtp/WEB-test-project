@@ -802,3 +802,64 @@ a:hover {
         gap: 5px;
     }
 }
+
+.assessment-wrapper {
+  display: flex;
+  justify-content: flex-end; /* выравнивание по правому краю */
+  align-items: flex-start;   /* по верхнему краю */
+  margin-bottom: 20px;       /* отступ снизу от блока */
+  position: relative;        /* для абсолютного бейджа */
+}
+
+.assessment-icon,
+.assessment-icon.disabled {
+  font-size: 30px;
+  text-decoration: none;
+  color: #007bff;
+  position: relative; /* чтобы бейдж позиционировался относительно иконки */
+}
+
+.assessment-icon.disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.assessment-badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: #ff4d4f;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 2px 6px;
+}
+
+.user-comment {
+    margin-top: 20px;
+}
+
+.user-comment textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    resize: vertical;
+}
+
+.user-comment .save-btn {
+    margin-top: 8px;
+    padding: 6px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.user-comment .save-btn:hover {
+    background-color: #0056b3;
+}
+

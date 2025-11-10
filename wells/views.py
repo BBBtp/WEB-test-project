@@ -187,12 +187,7 @@ def add_symptom_to_assessment(request: HttpRequest, symptom_id: int) -> HttpResp
             "symptom_points": symptom.points,
         },
     )
-    
-    if not item_created:
-        item.quantity += quantity
-        item.symptom_points = symptom.points  # Обновляем баллы на актуальные
-        item.save(update_fields=("quantity", "symptom_points",))
-    
+
     messages.success(
         request,
         f"Симптом '{symptom.name}' добавлен в оценку. Текущая выраженность: {item.quantity}.",
@@ -289,3 +284,15 @@ def deleted_assessment_detail(request: HttpRequest, assessment_id: int) -> HttpR
         "assessment": assessment,
     }
     return render(request, "wells/deleted_assessment.html", context)
+
+
+def update_assessment_comment(request, assessment_id):
+    assessment = get_object_or_404(RiskAssessment, id=assessment_id, patient=request.user)
+
+    if request.method == "POST":
+        comment = request.POST.get("comment", "").strip()  # получаем комментарий из формы
+        assessment.comment = comment
+        assessment.save(update_fields=["comment"])
+        messages.success(request, "Комментарий успешно обновлён")
+
+    return redirect("assessment_detail", assessment_id=assessment.id)

@@ -36,29 +36,21 @@
                     <span class="symptom-category">{{ symptom.category }}</span>
                     <span class="symptom-points">{{ symptom.points }} баллов</span>
                 </div>
-                <div class="m2m-field">
-                    <label>Количество:</label>
-                    <span>{{ symptom.quantity }}</span>
-                </div>
-                <div class="symptom-actions">
-                    <form method="post" action="{% url 'remove_symptom_from_assessment' assessment.id symptom.item_id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="delete-btn">Удалить</button>
-                    </form>
-                </div>
+            
             </div>
             {% endfor %}
         </div>
 
-        <!-- Дополнительная информация -->
-        <div class="additional-info">
-            <h3>Интерпретация шкалы Уэллса</h3>
-            <ul>
-                <li><strong>0-2 балла:</strong> Низкий риск (вероятность &lt; 15%)</li>
-                <li><strong>3-6 баллов:</strong> Средний риск (вероятность ~30%)</li>
-                <li><strong>&gt;6 баллов:</strong> Высокий риск (вероятность &gt; 60%)</li>
-            </ul>
+        
+        <div class="user-comment">
+            <h3>Ваш комментарий</h3>
+            <form method="post" action="{% url 'update_assessment_comment' assessment.id %}">
+                {% csrf_token %}
+                <textarea name="comment" rows="4" placeholder="Введите комментарий" disabled>{{ assessment.comment }}</textarea>
+                <button type="submit" class="save-btn" style="display: none;">Сохранить</button>
+            </form>
         </div>
+
 
         <!-- Кнопка логического удаления оценки (RAW SQL в контроллере) -->
         <div class="danger-zone">
