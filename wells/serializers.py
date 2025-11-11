@@ -37,16 +37,15 @@ class ClinicalSymptomCreateSerializer(serializers.ModelSerializer):
 class AssessmentSymptomSerializer(serializers.ModelSerializer):
     """Сериализатор для симптомов в оценке"""
     symptom_name = serializers.CharField(source='symptom.name', read_only=True)
-    symptom_points = serializers.IntegerField(read_only=True)
     total_points = serializers.IntegerField(read_only=True)
-    
+
     class Meta:
         model = AssessmentSymptom
         fields = [
-            'id', 'symptom', 'symptom_name', 'quantity', 
-            'symptom_points', 'note', 'total_points',
+            'id', 'symptom', 'symptom_name',
+            'symptom_points', 'total_points',
         ]
-        read_only_fields = ['id', 'symptom_points', 'total_points',]
+        read_only_fields = ['id', 'symptom', 'symptom_name', 'total_points']
 
 
 class RiskAssessmentSerializer(serializers.ModelSerializer):
