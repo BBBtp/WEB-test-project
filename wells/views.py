@@ -115,7 +115,6 @@ def assessment_detail(request: HttpRequest, assessment_id: int) -> HttpResponse:
             "item_id": item.id,
             "name": item.symptom.name,
             "points": item.symptom_points,
-            "quantity": item.quantity,
             "image_url": item.symptom.image_url,
             "total_points": item.total_points,
         }
@@ -151,50 +150,36 @@ def current_assessment_view(request: HttpRequest) -> HttpResponse:
 @transaction.atomic
 def add_symptom_to_assessment(request: HttpRequest, symptom_id: int) -> HttpResponse:
     """POST: Добавить симптом в текущую оценку"""
-    
+
     if request.method != "POST":
         raise Http404("Метод не поддерживается.")
-    
+
     symptom = get_object_or_404(ClinicalSymptom, id=symptom_id, is_active=True)
-    
-    quantity_raw = request.POST.get("quantity", "1")
-    try:
-        quantity = int(quantity_raw)
-    except ValueError:
-        quantity = 1
-    if quantity < 1:
-        quantity = 1
-    
+
     # Создаем или получаем черновик оценки
-    assessment, assessment_created = RiskAssessment.objects.select_for_update().get_or_create(
+    assessment, created = RiskAssessment.objects.select_for_update().get_or_create(
         patient=request.user,
         status=RiskAssessment.Status.DRAFT,
-        defaults={
-            "topic": "Оценка риска ТГВ/ТЭЛА",
-        },
+        defaults={"topic": "Оценка риска ТГВ/ТЭЛА"},
     )
-    
-    if assessment_created and assessment.formation_date is None:
+
+    if created and assessment.formation_date is None:
         assessment.formation_date = timezone.now()
         assessment.save(update_fields=("formation_date",))
-    
-    # Добавляем или обновляем симптом в оценке
+
+    # Добавляем симптом, если его ещё нет
     item, item_created = AssessmentSymptom.objects.get_or_create(
         assessment=assessment,
         symptom=symptom,
-        defaults={
-            "quantity": quantity,
-            "symptom_points": symptom.points,
-        },
+        defaults={"symptom_points": symptom.points},
     )
 
-    messages.success(
-        request,
-        f"Симптом '{symptom.name}' добавлен в оценку. Текущая выраженность: {item.quantity}.",
-    )
+    if item_created:
+        messages.success(request, f"Симптом '{symptom.name}' добавлен в оценку.")
+    else:
+        messages.info(request, f"Симптом '{symptom.name}' уже добавлен в оценку.")
+
     return redirect("assessment_detail", assessment_id=assessment.id)
-
-
 @login_required
 @transaction.atomic
 def remove_symptom_from_assessment(
@@ -202,10 +187,10 @@ def remove_symptom_from_assessment(
     assessment_id: int,
     symptom_item_id: int,
 ) -> HttpResponse:
-    """POST: �?�?�?���?�?�?� �?��?���'�?�? �? �����?�%��� �?�Ő�?���"""
+
     
     if request.method != "POST":
-        raise Http404("�?��'�?�? �?�� ���?�?�?��?���?����'�?�?.")
+        raise Http404("Метод не поддерживается.")
     
     assessment = get_object_or_404(
         RiskAssessment.objects.select_for_update(),

@@ -28,7 +28,7 @@ class ClinicalSymptomAdmin(admin.ModelAdmin):
 class AssessmentSymptomInline(admin.TabularInline):
     model = AssessmentSymptom
     extra = 0
-    fields = ("symptom", "quantity", "symptom_points", "note")
+    fields = ("symptom", "symptom_points")
     readonly_fields = ("symptom_points",)
     autocomplete_fields = ("symptom",)
 
@@ -74,7 +74,7 @@ class RiskAssessmentAdmin(admin.ModelAdmin):
 
 @admin.register(AssessmentSymptom)
 class AssessmentSymptomAdmin(admin.ModelAdmin):
-    list_display = ("assessment", "symptom", "quantity", "symptom_points", "total_points")
+    list_display = ("assessment", "symptom", "symptom_points", "total_points")
     list_filter = ("assessment__status",)
     search_fields = ("symptom__name", "assessment__patient__username")
     autocomplete_fields = ("assessment", "symptom")
