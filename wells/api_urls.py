@@ -32,4 +32,7 @@ urlpatterns = [
     path('users/profile/update/', api_views.user_update, name='api_user_update'),
     path('users/login/', api_views.user_login, name='api_user_login'),
     path('users/logout/', api_views.user_logout, name='api_user_logout'),
+    path('users/public-key/', api_views.get_public_key, name='api_public_key'),
+    path('users/active-sessions/', api_views.get_active_users_with_sessions, name='api_active_users_sessions'),
+
 ]

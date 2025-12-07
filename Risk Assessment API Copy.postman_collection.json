@@ -1,0 +1,664 @@
+{
+	"info": {
+		"_postman_id": "0cf01f07-945c-47cd-91a2-4dc149342c51",
+		"name": "Risk Assessment API Copy",
+		"description": "Полная коллекция для работы с API оценки риска ТГВ/ТЭЛА с RSA аутентификацией",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "38809705"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Get Public Key",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/api/users/public-key/",
+						"description": "Получить публичный RSA ключ для шифрования"
+					},
+					"response": []
+				},
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": "{{base_url}}/api/users/register/"
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const token = pm.response.headers.get('X-Auth-Token');",
+									"    if (token) {",
+									"        pm.collectionVariables.set('rsa_token', token);",
+									"        console.log('RSA токен сохранен в переменную rsa_token');",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": "{{base_url}}/api/users/login/",
+						"description": "Вход в систему. RSA токен автоматически сохраняется в переменную rsa_token из заголовка X-Auth-Token"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/users/logout/"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/users/profile/"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"User\"\n}"
+						},
+						"url": "{{base_url}}/api/users/profile/update/"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Sessions (Lua)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/users/active-sessions/",
+						"description": "Получить список активных пользователей с сессиями через Lua скрипт. Требует прав модератора (is_staff=True)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Symptoms",
+			"item": [
+				{
+					"name": "List Symptoms",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/symptoms/?search=fever",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"symptoms",
+								""
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "fever"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Symptom Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/symptoms/1/"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Symptom",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Cough\",\n  \"slug\": \"cough\",\n  \"description\": \"Persistent cough\",\n  \"points\": 5,\n  \"risk_factor\": 2,\n  \"is_active\": true\n}"
+						},
+						"url": "{{base_url}}/api/symptoms/create/"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Symptom",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Cough Updated\",\n  \"points\": 6\n}"
+						},
+						"url": "{{base_url}}/api/symptoms/1/update/"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Symptom",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/symptoms/1/delete/"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Symptom Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/path/to/image.jpg"
+								}
+							]
+						},
+						"url": "{{base_url}}/api/symptoms/1/upload-image/"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Symptom to Draft",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/symptoms/1/add-to-draft/"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "Get Cart Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/cart/info/"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Assessments",
+			"item": [
+				{
+					"name": "List Assessments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/assessments/?status=FORMED",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assessments",
+								""
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "FORMED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Assessment Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/assessments/1/"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Assessment",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"topic\": \"Updated topic\",\n  \"comment\": \"Some comment\"\n}"
+						},
+						"url": "{{base_url}}/api/assessments/1/update/"
+					},
+					"response": []
+				},
+				{
+					"name": "Form Assessment",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/assessments/1/form/"
+					},
+					"response": []
+				},
+				{
+					"name": "Complete/Reject Assessment",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"action\": \"complete\"\n}"
+						},
+						"url": "{{base_url}}/api/assessments/1/complete/"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Assessment",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/assessments/1/delete/"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Assessment Items",
+			"item": [
+				{
+					"name": "Update Assessment Symptom",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 2,\n  \"note\": \"Updated note\"\n}"
+						},
+						"url": "{{base_url}}/api/assessment-symptoms/1/"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Assessment Symptom",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-CSRToken",
+								"value": "{{csr_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/assessment-symptoms/1/delete/"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "rsa_token",
+			"value": "",
+			"description": {
+				"content": "RSA токен аутентификации. Автоматически сохраняется при успешном логине.",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "csr_token",
+			"value": "",
+			"description": {
+				"content": "CSRF токен",
+				"type": "text/plain"
+			}
+		}
+	]
+}

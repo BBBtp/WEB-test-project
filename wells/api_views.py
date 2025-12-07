@@ -21,6 +21,8 @@ from .serializers import (
 )
 from .minio_utils import upload_image, delete_image, generate_image_name
 from .user_utils import get_creator_user
+from .rsa_utils import create_auth_token, get_public_key_pem
+from .redis_lua_utils import get_active_users_with_sessions_lua
 
 session_storage = redis.StrictRedis(host=settings.REDIS_HOST,
                                     port=settings.REDIS_PORT)
@@ -406,12 +408,25 @@ def user_update(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@extend_schema(tags=["Auth"], summary="Вход (SessionAuth)",
-               request=UserLoginSerializer, )
+@extend_schema(
+    tags=["Auth"], 
+    summary="Вход (RSA SessionAuth)",
+    description="Аутентификация пользователя с получением RSA-зашифрованного токена. "
+                "Токен возвращается в заголовке X-Auth-Token. "
+                "Используйте этот токен в заголовке X-Auth-Token или Authorization: Bearer <token> для последующих запросов.",
+    request=UserLoginSerializer,
+    responses={
+        200: OpenApiResponse(
+            description="Успешный вход. Токен в заголовке X-Auth-Token",
+            response=UserSerializer
+        ),
+        400: OpenApiResponse(description="Неверные данные для входа")
+    }
+)
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def user_login(request):
-    """POST /api/users/login/ - Аутентификация пользователя (SessionAuth)"""
+    """POST /api/users/login/ - Аутентификация пользователя (RSA SessionAuth через HTTP заголовки)"""
     from django.contrib.auth import authenticate, login
     serializer = UserLoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -426,11 +441,15 @@ def user_login(request):
     random_key = str(uuid.uuid4())
     session_storage.set(random_key, username)
 
+    rsa_token = create_auth_token(username, random_key)
+
     response = Response({
         'id': user.id,
         'username': user.username,
         'is_staff': user.is_staff,
     })
+
+    response['X-Auth-Token'] = rsa_token
     response.set_cookie(
         "session_id", random_key,
     )
@@ -438,11 +457,72 @@ def user_login(request):
     return response
 
 
-@extend_schema(tags=["Auth"], summary="Выход (SessionAuth)")
+@extend_schema(
+    tags=["Auth"], 
+    summary="Выход (SessionAuth)",
+    description="Деавторизация пользователя. Удаляет сессию из Redis и очищает cookie. "
+                "После logout RSA токен становится недействительным, так как сессия удаляется из Redis."
+)
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def user_logout(request):
     """POST /api/users/logout/ - Деавторизация пользователя (SessionAuth)"""
-    session_id = request.COOKIES.get('session_id')
-    session_storage.delete(session_id)
-    return Response(status=status.HTTP_204_NO_CONTENT)
+    # Пробуем получить session_id из заголовка или cookie
+    session_id = None
+    auth_token = request.META.get('HTTP_X_AUTH_TOKEN') or request.META.get('HTTP_AUTHORIZATION')
+    
+    if auth_token:
+        if auth_token.startswith('Bearer '):
+            auth_token = auth_token[7:]
+        try:
+            from .rsa_utils import parse_auth_token
+            _, session_id = parse_auth_token(auth_token)
+        except Exception:
+            pass
+    
+    if not session_id:
+        session_id = request.COOKIES.get('session_id')
+    if session_id:
+        session_storage.delete(session_id)
+    response = Response({
+    }, status=status.HTTP_200_OK)
+    response.delete_cookie('session_id')
+    
+    return response
+
+
+@extend_schema(
+    tags=["Auth"], 
+    summary="Получить публичный RSA ключ",
+    description="Получение публичного RSA ключа для шифрования. "
+                "Ключ используется для шифрования данных на клиенте. "
+                "Сервер использует приватный ключ для расшифровки."
+)
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_public_key(request):
+    """GET /api/users/public-key/ - Получение публичного RSA ключа для шифрования"""
+    public_key = get_public_key_pem()
+    return Response({
+        'public_key': public_key,
+        'format': 'PEM',
+        'usage': 'Используйте этот ключ для шифрования токена аутентификации'
+    })
+
+
+@extend_schema(tags=["Auth"], summary="Список активных пользователей с сессиями (Lua)")
+@api_view(['GET'])
+@permission_classes([IsModerator])
+def get_active_users_with_sessions(request):
+    """GET /api/users/active-sessions/ - Получение списка активных пользователей с их сессиями через Lua скрипт"""
+    try:
+        users_sessions = get_active_users_with_sessions_lua()
+        return Response({
+            'active_sessions': users_sessions,
+            'total_users': len(users_sessions),
+            'method': 'Lua script'
+        })
+    except Exception as e:
+        return Response({
+            'error': f'Ошибка получения активных сессий: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

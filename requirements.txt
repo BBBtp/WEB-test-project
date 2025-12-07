@@ -6,3 +6,4 @@ minio==7.2.18
 drf-spectacular~=0.28.0
 django-redis==5.2.0
 redis==5.2.1
+cryptography==43.0.3

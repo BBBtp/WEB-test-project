@@ -168,6 +168,32 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'REST API для системы оценки риска ТГВ/ТЭЛА',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SECURITY_DEFINITIONS': {
+        'RSA Token': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'X-Auth-Token',
+            'description': 'RSA зашифрованный токен аутентификации. Получите его через /api/users/login/'
+        },
+        'Bearer Token': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': 'RSA токен в формате Bearer. Используйте: Bearer <token>'
+        }
+    },
+    'COMPONENT_SECURITY_SCHEMES': {
+        'RSA Token': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'X-Auth-Token'
+        },
+        'Bearer Token': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    }
 }
 
 # CORS settings
