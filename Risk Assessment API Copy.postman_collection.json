@@ -12,13 +12,25 @@
 			"item": [
 				{
 					"name": "Get Public Key",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Сохраняем CSRF токен из cookie ответа",
+									"const csrfCookie = pm.cookies.get('csrftoken');",
+									"if (csrfCookie) {",
+									"    pm.collectionVariables.set('csrftoken', csrfCookie);",
+									"    console.log('CSRF токен получен и сохранен из cookie');",
+									"}"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
-							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
-							},
 							{
 								"key": "Content-Type",
 								"value": "application/json"
@@ -36,7 +48,7 @@
 								""
 							]
 						},
-						"description": "Получить публичный RSA ключ для шифрования"
+						"description": "Получить публичный RSA ключ для шифрования. Также автоматически получает CSRF токен из cookie (если установлен)."
 					},
 					"response": []
 				},
@@ -46,8 +58,8 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -82,10 +94,19 @@
 								"type": "text/javascript",
 								"exec": [
 									"if (pm.response.code === 200) {",
+									"    // Сохраняем RSA токен",
 									"    const token = pm.response.headers.get('X-Auth-Token');",
 									"    if (token) {",
 									"        pm.collectionVariables.set('rsa_token', token);",
 									"        console.log('RSA токен сохранен в переменную rsa_token');",
+									"    }",
+									"    // Сохраняем CSRF токен из cookie ответа",
+									"    const csrfCookie = pm.cookies.get('csrftoken');",
+									"    if (csrfCookie) {",
+									"        pm.collectionVariables.set('csrftoken', csrfCookie);",
+									"        console.log('CSRF токен сохранен из cookie:', csrfCookie);",
+									"    } else {",
+									"        console.log('CSRF токен не найден в cookie. Выполните запрос Get CSRF Token перед логином.');",
 									"    }",
 									"}"
 								]
@@ -96,8 +117,8 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -130,8 +151,8 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -163,8 +184,8 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -196,8 +217,8 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -234,8 +255,8 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -273,8 +294,8 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -311,8 +332,8 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -343,6 +364,10 @@
 					"request": {
 						"method": "POST",
 						"header": [
+							{
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
+							},
 							{
 								"key": "Content-Type",
 								"value": "application/json"
@@ -377,8 +402,8 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -415,8 +440,8 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -449,8 +474,8 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -493,8 +518,8 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -532,8 +557,8 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -570,8 +595,8 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -583,13 +608,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/assessments/?status=FORMED",
+							"raw": "{{base_url}}/api/deep-vein-thrombosis/?status=FORMED",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"assessments",
+								"deep-vein-thrombosis",
 								""
 							],
 							"query": [
@@ -608,8 +633,8 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -621,13 +646,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/assessments/1/",
+							"raw": "{{base_url}}/api/deep-vein-thrombosis/1/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"assessments",
+								"deep-vein-thrombosis",
 								"1",
 								""
 							]
@@ -641,8 +666,8 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -658,13 +683,13 @@
 							"raw": "{\n  \"topic\": \"Updated topic\",\n  \"comment\": \"Some comment\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/assessments/1/update/",
+							"raw": "{{base_url}}/api/deep-vein-thrombosis/1/update/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"assessments",
+								"deep-vein-thrombosis",
 								"1",
 								"update",
 								""
@@ -679,8 +704,8 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -692,13 +717,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/assessments/1/form/",
+							"raw": "{{base_url}}/api/deep-vein-thrombosis/1/form/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"assessments",
+								"deep-vein-thrombosis",
 								"1",
 								"form",
 								""
@@ -713,8 +738,8 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -730,13 +755,13 @@
 							"raw": "{\n  \"action\": \"complete\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/assessments/1/complete/",
+							"raw": "{{base_url}}/api/deep-vein-thrombosis/1/complete/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"assessments",
+								"deep-vein-thrombosis",
 								"1",
 								"complete",
 								""
@@ -751,8 +776,8 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -764,13 +789,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/assessments/1/delete/",
+							"raw": "{{base_url}}/api/deep-vein-thrombosis/1/delete/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"assessments",
+								"deep-vein-thrombosis",
 								"1",
 								"delete",
 								""
@@ -790,8 +815,8 @@
 						"method": "PUT",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -807,13 +832,13 @@
 							"raw": "{\n  \"quantity\": 2,\n  \"note\": \"Updated note\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/assessment-symptoms/1/",
+							"raw": "{{base_url}}/api/deep-vein-thrombosis-symptoms/1/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"assessment-symptoms",
+								"deep-vein-thrombosis-symptoms",
 								"1",
 								""
 							]
@@ -827,8 +852,8 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "X-CSRToken",
-								"value": "{{csr_token}}"
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -840,13 +865,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/assessment-symptoms/1/delete/",
+							"raw": "{{base_url}}/api/deep-vein-thrombosis-symptoms/1/delete/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"assessment-symptoms",
+								"deep-vein-thrombosis-symptoms",
 								"1",
 								"delete",
 								""
@@ -891,9 +916,9 @@
 			"description": "RSA токен аутентификации. Автоматически сохраняется при успешном логине."
 		},
 		{
-			"key": "csr_token",
+			"key": "csrftoken",
 			"value": "",
-			"description": "CSRF токен"
+			"description": "CSRF токен (автоматически получается из cookie csrftoken)"
 		}
 	]
 }

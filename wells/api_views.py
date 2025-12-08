@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.utils import timezone
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from wells_project import settings
 from .models import ClinicalSymptom, RiskAssessment, AssessmentSymptom
@@ -494,8 +495,10 @@ def user_logout(request):
     summary="Получить публичный RSA ключ",
     description="Получение публичного RSA ключа для шифрования. "
                 "Ключ используется для шифрования данных на клиенте. "
-                "Сервер использует приватный ключ для расшифровки."
+                "Сервер использует приватный ключ для расшифровки. "
+                "Также устанавливает CSRF cookie для последующих запросов."
 )
+@ensure_csrf_cookie
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
 def get_public_key(request):
@@ -505,6 +508,25 @@ def get_public_key(request):
         'public_key': public_key,
         'format': 'PEM',
         'usage': 'Используйте этот ключ для шифрования токена аутентификации'
+    })
+
+
+@extend_schema(
+    tags=["Auth"], 
+    summary="Получить CSRF токен",
+    description="Получение CSRF токена для использования в заголовке X-CSRFToken. "
+                "Токен устанавливается в cookie csrftoken и возвращается в ответе."
+)
+@ensure_csrf_cookie
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_csrf_token(request):
+    """GET /api/users/csrf-token/ - Получение CSRF токена"""
+    from django.middleware.csrf import get_token
+    csrf_token = get_token(request)
+    return Response({
+        'csrftoken': csrf_token,
+        'message': 'Используйте этот токен в заголовке X-CSRFToken для POST/PUT/DELETE запросов'
     })
 
 

@@ -33,6 +33,7 @@ urlpatterns = [
     path('users/login/', api_views.user_login, name='api_user_login'),
     path('users/logout/', api_views.user_logout, name='api_user_logout'),
     path('users/public-key/', api_views.get_public_key, name='api_public_key'),
+    path('users/csrf-token/', api_views.get_csrf_token, name='api_csrf_token'),
     path('users/active-sessions/', api_views.get_active_users_with_sessions, name='api_active_users_sessions'),
 
 ]
