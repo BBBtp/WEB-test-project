@@ -140,20 +140,11 @@ class AssessmentSymptom(models.Model):
         related_name="symptom_assessments",
         verbose_name="Симптом"
     )
-    quantity = models.PositiveIntegerField(
-        default=1,
-        verbose_name="Количество/Выраженность"
-    )
+
     symptom_points = models.IntegerField(
         verbose_name="Баллы симптома",
         null=True,
         help_text="Баллы на момент добавления"
-    )
-    note = models.CharField(
-        max_length=220,
-        blank=True,
-        null=True,
-        verbose_name="Примечание"
     )
 
     class Meta:
@@ -167,9 +158,9 @@ class AssessmentSymptom(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{self.symptom.name} x {self.quantity}"
+        return f"{self.symptom.name}"
 
     @property
     def total_points(self) -> int:
         """Общие баллы с учетом количества"""
-        return (self.symptom_points or 0) * (self.quantity or 0)
+        return self.symptom_points or 0

@@ -101,43 +101,41 @@ def add_symptom_to_draft(request, symptom_id):
         symptom = get_object_or_404(ClinicalSymptom, id=symptom_id, is_active=True)
 
         with transaction.atomic():
-            # Создаем или получаем черновик оценки
             assessment, created = RiskAssessment.objects.get_or_create(
-                patient=request.user,
+                patient=get_creator_user(),
                 status=RiskAssessment.Status.DRAFT,
-                defaults={
-                    'topic': 'Оценка риска ТГВ/ТЭЛА',
-                }
+                defaults={'topic': 'Оценка риска ТГВ/ТЭЛА'},
             )
 
-            if created:
+            if created and not assessment.formation_date:
                 assessment.formation_date = timezone.now()
-                assessment.save()
+                assessment.save(update_fields=["formation_date"])
 
-            # Добавляем или обновляем симптом в оценке
+            # Добавляем симптом, если его еще нет
             item, item_created = AssessmentSymptom.objects.get_or_create(
                 assessment=assessment,
                 symptom=symptom,
-                defaults={
-                    'quantity': 1,
-                    'symptom_points': symptom.points,
-                }
+                defaults={'symptom_points': symptom.points},
             )
 
             if not item_created:
-                item.quantity += 1
                 item.symptom_points = symptom.points
-                item.save()
+                item.save(update_fields=["symptom_points"])
+                message = f"Симптом '{symptom.name}' уже был добавлен в оценку."
+            else:
+                message = f"Симптом '{symptom.name}' добавлен в оценку риска ТГВ/ТЭЛА."
 
-            return Response({
-                'message': f'Симптом: {symptom.name} добавлен в оценку риска ТГВ/ТЭЛА',
-                'assessment_id': assessment.id,
-                'quantity': item.quantity
-            }, status=status.HTTP_201_CREATED)
+            return Response(
+                {
+                    "message": message,
+                    "assessment_id": assessment.id,
+                    "symptom_points": item.symptom_points,
+                },
+                status=status.HTTP_201_CREATED,
+            )
 
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(tags=["Symptoms"], summary="Загрузить изображение для симптома")
 @api_view(['POST'])
@@ -356,11 +354,11 @@ def delete_assessment(request, assessment_id):
 class AssessmentSymptomDeleteAPIView(DestroyAPIView):
     """DELETE /api/assessment-symptoms/{id}/ - Удаление симптома из оценки риска ТГВ/ТЭЛА"""
     queryset = AssessmentSymptom.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = AssessmentSymptomSerializer
 
-    def perform_destroy(self, instance):
-        instance.delete()
-
+    def update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return super().update(request, *args, **kwargs)
 
 @extend_schema(tags=["Assessment Items"], summary="Обновить позицию заявки")
 class AssessmentSymptomUpdateAPIView(UpdateAPIView):

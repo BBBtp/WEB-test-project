@@ -8,16 +8,16 @@ User = get_user_model()
 class ClinicalSymptomSerializer(serializers.ModelSerializer):
     """Сериализатор для клинических симптомов"""
     image_url = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = ClinicalSymptom
         fields = [
-            'id', 'name', 'slug', 'description', 'points', 
+            'id', 'name', 'slug', 'description', 'points',
             'risk_factor', 'is_active',
             'image_url'
         ]
         read_only_fields = ['id', 'image_url']
-    
+
     def get_image_url(self, obj):
         """Получить URL изображения из Minio"""
         return obj.image_url
@@ -25,11 +25,11 @@ class ClinicalSymptomSerializer(serializers.ModelSerializer):
 
 class ClinicalSymptomCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создания симптомов (без изображения)"""
-    
+
     class Meta:
         model = ClinicalSymptom
         fields = [
-            'name', 'slug', 'description', 'points', 
+            'name', 'slug', 'description', 'points',
             'risk_factor', 'is_active'
         ]
 
@@ -37,16 +37,15 @@ class ClinicalSymptomCreateSerializer(serializers.ModelSerializer):
 class AssessmentSymptomSerializer(serializers.ModelSerializer):
     """Сериализатор для симптомов в оценке"""
     symptom_name = serializers.CharField(source='symptom.name', read_only=True)
-    symptom_points = serializers.IntegerField(read_only=True)
     total_points = serializers.IntegerField(read_only=True)
-    
+
     class Meta:
         model = AssessmentSymptom
         fields = [
-            'id', 'symptom', 'symptom_name', 'quantity', 
-            'symptom_points', 'note', 'total_points',
+            'id', 'symptom', 'symptom_name',
+            'symptom_points', 'total_points',
         ]
-        read_only_fields = ['id', 'symptom_points', 'total_points',]
+        read_only_fields = ['id', 'symptom', 'symptom_name', 'total_points']
 
 
 class RiskAssessmentSerializer(serializers.ModelSerializer):
@@ -81,7 +80,7 @@ class RiskAssessmentListSerializer(serializers.ModelSerializer):
     patient_username = serializers.CharField(source='patient.username', read_only=True)
     moderator_username = serializers.CharField(source='moderator.username', read_only=True)
     total_score = serializers.IntegerField(read_only=True)
-    
+
     class Meta:
         model = RiskAssessment
         fields = [
@@ -93,7 +92,7 @@ class RiskAssessmentListSerializer(serializers.ModelSerializer):
 
 class RiskAssessmentUpdateSerializer(serializers.ModelSerializer):
     """Сериализатор для обновления полей оценки"""
-    
+
     class Meta:
         model = RiskAssessment
         fields = ['topic', 'comment']
@@ -101,7 +100,7 @@ class RiskAssessmentUpdateSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для пользователей"""
-    
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined']
@@ -111,14 +110,15 @@ class UserSerializer(serializers.ModelSerializer):
 class UserCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создания пользователей"""
     password = serializers.CharField(write_only=True)
-    
+
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name', 'password']
-    
+
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
+
 
 class UserLoginSerializer(serializers.Serializer):
     """Сериализатор для авторизации"""

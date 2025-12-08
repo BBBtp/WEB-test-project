@@ -96,7 +96,7 @@ else:
             "USER": os.getenv("DB_USER", "wells_user"),
             "PASSWORD": os.getenv("DB_PASSWORD", "1"),
             "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-            "PORT": os.getenv("DB_PORT", "5432"),
+            "PORT": os.getenv("DB_PORT", "5455"),
             "OPTIONS": {
                 "client_encoding": "UTF8",
             },
