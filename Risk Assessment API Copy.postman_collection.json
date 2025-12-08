@@ -3,7 +3,7 @@
 		"_postman_id": "0cf01f07-945c-47cd-91a2-4dc149342c51",
 		"name": "Risk Assessment API Copy",
 		"description": "Полная коллекция для работы с API оценки риска ТГВ/ТЭЛА с RSA аутентификацией",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "38809705"
 	},
 	"item": [
@@ -24,7 +24,18 @@
 								"value": "application/json"
 							}
 						],
-						"url": "{{base_url}}/api/users/public-key/",
+						"url": {
+							"raw": "{{base_url}}/api/users/public-key/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"public-key",
+								""
+							]
+						},
 						"description": "Получить публичный RSA ключ для шифрования"
 					},
 					"response": []
@@ -47,7 +58,18 @@
 							"mode": "raw",
 							"raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\",\n  \"password\": \"password123\"\n}"
 						},
-						"url": "{{base_url}}/api/users/register/"
+						"url": {
+							"raw": "{{base_url}}/api/users/register/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"register",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -86,7 +108,18 @@
 							"mode": "raw",
 							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\"\n}"
 						},
-						"url": "{{base_url}}/api/users/login/",
+						"url": {
+							"raw": "{{base_url}}/api/users/login/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"login",
+								""
+							]
+						},
 						"description": "Вход в систему. RSA токен автоматически сохраняется в переменную rsa_token из заголовка X-Auth-Token"
 					},
 					"response": []
@@ -109,7 +142,18 @@
 								"value": "{{rsa_token}}"
 							}
 						],
-						"url": "{{base_url}}/api/users/logout/"
+						"url": {
+							"raw": "{{base_url}}/api/users/logout/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"logout",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -131,7 +175,18 @@
 								"value": "{{rsa_token}}"
 							}
 						],
-						"url": "{{base_url}}/api/users/profile/"
+						"url": {
+							"raw": "{{base_url}}/api/users/profile/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"profile",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -157,7 +212,19 @@
 							"mode": "raw",
 							"raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"User\"\n}"
 						},
-						"url": "{{base_url}}/api/users/profile/update/"
+						"url": {
+							"raw": "{{base_url}}/api/users/profile/update/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"profile",
+								"update",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -179,7 +246,18 @@
 								"value": "{{rsa_token}}"
 							}
 						],
-						"url": "{{base_url}}/api/users/active-sessions/",
+						"url": {
+							"raw": "{{base_url}}/api/users/active-sessions/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"active-sessions",
+								""
+							]
+						},
 						"description": "Получить список активных пользователей с сессиями через Lua скрипт. Требует прав модератора (is_staff=True)"
 					},
 					"response": []
@@ -245,7 +323,18 @@
 								"value": "{{rsa_token}}"
 							}
 						],
-						"url": "{{base_url}}/api/symptoms/1/"
+						"url": {
+							"raw": "{{base_url}}/api/symptoms/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"symptoms",
+								"1",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -267,7 +356,18 @@
 							"mode": "raw",
 							"raw": "{\n  \"name\": \"Cough\",\n  \"slug\": \"cough\",\n  \"description\": \"Persistent cough\",\n  \"points\": 5,\n  \"risk_factor\": 2,\n  \"is_active\": true\n}"
 						},
-						"url": "{{base_url}}/api/symptoms/create/"
+						"url": {
+							"raw": "{{base_url}}/api/symptoms/create/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"symptoms",
+								"create",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -293,7 +393,19 @@
 							"mode": "raw",
 							"raw": "{\n  \"name\": \"Cough Updated\",\n  \"points\": 6\n}"
 						},
-						"url": "{{base_url}}/api/symptoms/1/update/"
+						"url": {
+							"raw": "{{base_url}}/api/symptoms/1/update/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"symptoms",
+								"1",
+								"update",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -315,7 +427,19 @@
 								"value": "{{rsa_token}}"
 							}
 						],
-						"url": "{{base_url}}/api/symptoms/1/delete/"
+						"url": {
+							"raw": "{{base_url}}/api/symptoms/1/delete/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"symptoms",
+								"1",
+								"delete",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -347,7 +471,19 @@
 								}
 							]
 						},
-						"url": "{{base_url}}/api/symptoms/1/upload-image/"
+						"url": {
+							"raw": "{{base_url}}/api/symptoms/1/upload-image/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"symptoms",
+								"1",
+								"upload-image",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -369,7 +505,19 @@
 								"value": "{{rsa_token}}"
 							}
 						],
-						"url": "{{base_url}}/api/symptoms/1/add-to-draft/"
+						"url": {
+							"raw": "{{base_url}}/api/symptoms/1/add-to-draft/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"symptoms",
+								"1",
+								"add-to-draft",
+								""
+							]
+						}
 					},
 					"response": []
 				}
@@ -396,7 +544,18 @@
 								"value": "{{rsa_token}}"
 							}
 						],
-						"url": "{{base_url}}/api/cart/info/"
+						"url": {
+							"raw": "{{base_url}}/api/cart/info/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"info",
+								""
+							]
+						}
 					},
 					"response": []
 				}
@@ -461,7 +620,18 @@
 								"value": "{{rsa_token}}"
 							}
 						],
-						"url": "{{base_url}}/api/assessments/1/"
+						"url": {
+							"raw": "{{base_url}}/api/assessments/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assessments",
+								"1",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -487,7 +657,19 @@
 							"mode": "raw",
 							"raw": "{\n  \"topic\": \"Updated topic\",\n  \"comment\": \"Some comment\"\n}"
 						},
-						"url": "{{base_url}}/api/assessments/1/update/"
+						"url": {
+							"raw": "{{base_url}}/api/assessments/1/update/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assessments",
+								"1",
+								"update",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -509,7 +691,19 @@
 								"value": "{{rsa_token}}"
 							}
 						],
-						"url": "{{base_url}}/api/assessments/1/form/"
+						"url": {
+							"raw": "{{base_url}}/api/assessments/1/form/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assessments",
+								"1",
+								"form",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -535,7 +729,19 @@
 							"mode": "raw",
 							"raw": "{\n  \"action\": \"complete\"\n}"
 						},
-						"url": "{{base_url}}/api/assessments/1/complete/"
+						"url": {
+							"raw": "{{base_url}}/api/assessments/1/complete/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assessments",
+								"1",
+								"complete",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -557,7 +763,19 @@
 								"value": "{{rsa_token}}"
 							}
 						],
-						"url": "{{base_url}}/api/assessments/1/delete/"
+						"url": {
+							"raw": "{{base_url}}/api/assessments/1/delete/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assessments",
+								"1",
+								"delete",
+								""
+							]
+						}
 					},
 					"response": []
 				}
@@ -588,7 +806,18 @@
 							"mode": "raw",
 							"raw": "{\n  \"quantity\": 2,\n  \"note\": \"Updated note\"\n}"
 						},
-						"url": "{{base_url}}/api/assessment-symptoms/1/"
+						"url": {
+							"raw": "{{base_url}}/api/assessment-symptoms/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assessment-symptoms",
+								"1",
+								""
+							]
+						}
 					},
 					"response": []
 				},
@@ -610,7 +839,19 @@
 								"value": "{{rsa_token}}"
 							}
 						],
-						"url": "{{base_url}}/api/assessment-symptoms/1/delete/"
+						"url": {
+							"raw": "{{base_url}}/api/assessment-symptoms/1/delete/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assessment-symptoms",
+								"1",
+								"delete",
+								""
+							]
+						}
 					},
 					"response": []
 				}
@@ -647,18 +888,12 @@
 		{
 			"key": "rsa_token",
 			"value": "",
-			"description": {
-				"content": "RSA токен аутентификации. Автоматически сохраняется при успешном логине.",
-				"type": "text/plain"
-			}
+			"description": "RSA токен аутентификации. Автоматически сохраняется при успешном логине."
 		},
 		{
 			"key": "csr_token",
 			"value": "",
-			"description": {
-				"content": "CSRF токен",
-				"type": "text/plain"
-			}
+			"description": "CSRF токен"
 		}
 	]
 }
