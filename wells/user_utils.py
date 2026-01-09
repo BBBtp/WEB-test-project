@@ -26,6 +26,10 @@ class UserSingleton:
                     'is_staff': True,
                 }
             )
+            # Устанавливаем пароль при создании (если пользователь был только что создан)
+            if created:
+                self._creator_user.set_password('wells_creator_password')
+                self._creator_user.save()
         return self._creator_user
 
 

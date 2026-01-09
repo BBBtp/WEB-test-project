@@ -21,7 +21,6 @@ from .serializers import (
     AssessmentSymptomSerializer, UserSerializer, UserCreateSerializer, UserLoginSerializer
 )
 from .minio_utils import upload_image, delete_image, generate_image_name
-from .user_utils import get_creator_user
 from .rsa_utils import create_auth_token, get_public_key_pem
 from .redis_lua_utils import get_active_users_with_sessions_lua
 
@@ -103,7 +102,7 @@ def add_symptom_to_draft(request, symptom_id):
 
         with transaction.atomic():
             assessment, created = RiskAssessment.objects.get_or_create(
-                patient=get_creator_user(),
+                patient=request.user,
                 status=RiskAssessment.Status.DRAFT,
                 defaults={'topic': 'Оценка риска ТГВ/ТЭЛА'},
             )
@@ -176,6 +175,7 @@ def upload_symptom_image(request, symptom_id):
 def get_cart_info(request):
     """GET /api/cart/info/ - Информация о корзине (заявке-черновике)"""
     try:
+        # Используем request.user для получения черновика текущего пользователя
         assessment = RiskAssessment.objects.filter(
             patient=request.user,
             status=RiskAssessment.Status.DRAFT
