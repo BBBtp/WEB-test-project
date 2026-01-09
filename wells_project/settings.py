@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-^-zp=%g0xc$&fceo^ygay!%!6t_4s64+9=4#+@uhm06(47(_rp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "10.174.203.183"]
 
 
 # Application definition
@@ -198,11 +198,24 @@ SPECTACULAR_SETTINGS = {
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://localhost:5173",
+    "https://127.0.0.1:5173",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# HTTPS settings
+# Определяем, используется ли HTTPS режим
+USE_HTTPS = os.getenv('USE_HTTPS', 'false').lower() in ('true', '1')
+# Для разработки можно отключить SECURE_SSL_REDIRECT
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
+# Безопасные cookies только при использовании HTTPS
+SESSION_COOKIE_SECURE = USE_HTTPS
+CSRF_COOKIE_SECURE = USE_HTTPS
+# Настройка для работы за прокси (например, Nginx)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # MinIO settings
 MINIO_ENDPOINT = os.getenv('MINIO_ENDPOINT', 'minio:9000')
