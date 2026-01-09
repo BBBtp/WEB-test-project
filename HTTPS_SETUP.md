@@ -1,49 +1,29 @@
 # Настройка HTTPS/HTTP для бэкенд сервера
 
-Бэкенд сервер поддерживает работу как в режиме HTTP, так и в режиме HTTPS. Вы можете выбрать режим при запуске контейнера.
+Бэкенд сервер поддерживает работу как в режиме HTTP, так и в режиме HTTPS. Вы можете выбрать режим, изменив значение `USE_HTTPS` в файле `docker-compose.yml`.
 
 ## Выбор режима работы
 
 ### Режим HTTP (по умолчанию)
 
-Для запуска в режиме HTTP:
-
-**Linux/Mac (Bash):**
+1. Откройте файл `docker-compose.yml`
+2. Найдите строку с `USE_HTTPS` (около строки 64)
+3. Убедитесь, что значение установлено: `USE_HTTPS=false`
+4. Запустите:
 ```bash
 docker-compose up --build
-```
-
-**Windows PowerShell:**
-```powershell
-docker-compose up --build
-```
-
-Или явно указать:
-
-**Linux/Mac (Bash):**
-```bash
-USE_HTTPS=false docker-compose up --build
-```
-
-**Windows PowerShell:**
-```powershell
-$env:USE_HTTPS="false"; docker-compose up --build
 ```
 
 Сервер будет доступен по адресу: **http://localhost:8000**
 
 ### Режим HTTPS
 
-Для запуска в режиме HTTPS:
-
-**Linux/Mac (Bash):**
+1. Откройте файл `docker-compose.yml`
+2. Найдите строку с `USE_HTTPS` (около строки 64)
+3. Измените значение на: `USE_HTTPS=true`
+4. Запустите:
 ```bash
-USE_HTTPS=true docker-compose up --build
-```
-
-**Windows PowerShell:**
-```powershell
-$env:USE_HTTPS="true"; docker-compose up --build
+docker-compose up --build
 ```
 
 **SSL сертификаты генерируются автоматически** при первом запуске контейнера в режиме HTTPS, если их еще нет. Они будут созданы в директории `keys/`:
@@ -56,53 +36,6 @@ $env:USE_HTTPS="true"; docker-compose up --build
 > ```bash
 > python keys/generate_cert.py
 > ```
-
-### Использование .env файла (рекомендуется)
-
-Самый удобный способ - создать файл `.env` в корне проекта. Docker Compose автоматически загрузит переменные из этого файла.
-
-**Создайте файл `.env` в корне проекта:**
-
-Для HTTP режима:
-```env
-USE_HTTPS=false
-HTTP_PORT=8000
-HTTPS_PORT=8443
-```
-
-Для HTTPS режима:
-```env
-USE_HTTPS=true
-HTTP_PORT=8000
-HTTPS_PORT=8443
-```
-
-После создания файла `.env` просто запускайте:
-```bash
-docker-compose up --build
-```
-
-> 💡 **Совет**: Файл `.env` уже должен быть в `.gitignore`, чтобы не попадать в репозиторий. Используйте `env.example` как шаблон.
-
-### Использование PowerShell скрипта (только для Windows)
-
-Для упрощения запуска в Windows PowerShell можно использовать скрипт `start.ps1`:
-
-**HTTP режим:**
-```powershell
-.\start.ps1 -Mode http
-```
-
-**HTTPS режим:**
-```powershell
-.\start.ps1 -Mode https
-```
-
-Или просто:
-```powershell
-.\start.ps1
-```
-(по умолчанию используется HTTP режим)
 
 ## Локальный запуск (без Docker)
 

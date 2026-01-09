@@ -49,8 +49,8 @@ services:
     build: .
     container_name: wells_web
     ports:
-      - "${HTTP_PORT:-8000}:8000"
-      - "${HTTPS_PORT:-8443}:8443"
+      - "8000:8000"
+      - "8443:8443"
     environment:
       - DB_ENGINE=django.db.backends.postgresql
       - DB_NAME=wells
@@ -61,7 +61,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - SECURE_SSL_REDIRECT=False
-      - USE_HTTPS=${USE_HTTPS:-false}
+      - USE_HTTPS=true
     depends_on:
       postgres:
         condition: service_healthy
@@ -72,7 +72,26 @@ services:
     volumes:
       - .:/app
       - ./keys:/app/keys
-    command: ["/app/start_server.sh"]
+    command: >
+            sh -c "python manage.py makemigrations &&
+                   python manage.py migrate &&
+                   echo 'from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username=\"admin\").exists() or User.objects.create_superuser(\"admin\", \"admin@example.com\", \"admin\")' | python manage.py shell &&
+                   if [ \"$$USE_HTTPS\" = \"true\" ] || [ \"$$USE_HTTPS\" = \"1\" ]; then
+                     echo '=== Запуск в режиме HTTPS ===' &&
+                     mkdir -p /app/keys &&
+                     if [ ! -f /app/keys/cert.pem ] || [ ! -f /app/keys/key.pem ]; then
+                       echo 'SSL сертификаты не найдены. Генерация...' &&
+                       python /app/keys/generate_cert.py;
+                     else
+                       echo 'SSL сертификаты уже существуют.';
+                     fi &&
+                     echo 'Запуск Gunicorn на порту 8443 (HTTPS)...' &&
+                     exec gunicorn --bind 0.0.0.0:8443 --keyfile /app/keys/key.pem --certfile /app/keys/cert.pem --workers 3 --timeout 120 wells_project.wsgi:application;
+                   else
+                     echo '=== Запуск в режиме HTTP ===' &&
+                     echo 'Запуск Gunicorn на порту 8000 (HTTP)...' &&
+                     exec gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wells_project.wsgi:application;
+                   fi"
 
 volumes:
   postgres_data:

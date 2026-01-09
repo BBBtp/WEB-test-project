@@ -20,9 +20,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Копируем код приложения
 COPY . .
 
-# Делаем скрипт запуска исполняемым
-RUN chmod +x /app/start_server.sh
-
 # Создаем пользователя для запуска приложения
 RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
 USER appuser
@@ -31,4 +28,4 @@ USER appuser
 EXPOSE 8000 8443
 
 # Команда запуска по умолчанию (переопределяется в docker-compose.yml)
-CMD ["/app/start_server.sh"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "wells_project.wsgi:application"]
