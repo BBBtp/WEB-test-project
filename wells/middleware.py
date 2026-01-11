@@ -4,6 +4,7 @@ from django.utils.deprecation import MiddlewareMixin
 
 from wells.api_views import session_storage
 from wells.rsa_utils import parse_auth_token
+from wells.guest_session_utils import get_or_create_guest_session, refresh_guest_session
 
 User = get_user_model()
 
@@ -39,6 +40,46 @@ class SessionMiddleware(MiddlewareMixin):
                 request.user = AnonymousUser()
         else:
             request.user = AnonymousUser()
+
+
+class GuestSessionMiddleware(MiddlewareMixin):
+    """
+    Middleware для управления гостевой сессией.
+    Создает/обновляет гостевую сессию для неавторизованных пользователей.
+    """
+    
+    def process_request(self, request):
+        # Работаем только с неавторизованными пользователями
+        if request.user.is_authenticated:
+            return
+        
+        # Получаем ID гостевой сессии из cookie
+        guest_session_id = request.COOKIES.get('guest_session_id')
+        
+        # Получаем или создаем гостевую сессию
+        session_id, session_data, is_new = get_or_create_guest_session(guest_session_id)
+        
+        # Сохраняем в request для использования в views
+        request.guest_session_id = session_id
+        request.guest_session_is_new = is_new
+    
+    def process_response(self, request, response):
+        # Устанавливаем cookie для гостевой сессии, если она новая или обновлена
+        if hasattr(request, 'guest_session_id') and not request.user.is_authenticated:
+            if request.guest_session_is_new or 'guest_session_id' not in request.COOKIES:
+                # Устанавливаем cookie на 20 минут
+                response.set_cookie(
+                    'guest_session_id',
+                    request.guest_session_id,
+                    max_age=20 * 60,  # 20 минут
+                    httponly=True,
+                    samesite='Lax'
+                )
+            else:
+                # Обновляем существующую сессию
+                refresh_guest_session(request.guest_session_id)
+        
+        return response
 
 class DisableCSRFMiddleware(object):
     def __init__(self, get_response):

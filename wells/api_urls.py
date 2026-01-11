@@ -19,6 +19,8 @@ urlpatterns = [
     path('deep-vein-thrombosis/<int:assessment_id>/form/', api_views.form_assessment, name='api_form_assessment'),
     path('deep-vein-thrombosis/<int:assessment_id>/complete/', api_views.complete_assessment, name='api_complete_assessment'),
     path('deep-vein-thrombosis/<int:assessment_id>/delete/', api_views.delete_assessment, name='api_delete_assessment'),
+    path('deep-vein-thrombosis/<int:assessment_id>/calculate/', api_views.start_async_calculation, name='api_start_async_calculation'),
+    path('deep-vein-thrombosis/<int:assessment_id>/result/', api_views.receive_calculation_result, name='api_receive_calculation_result'),
 
     # Домен м-м (симптомы в заявке)
     path('deep-vein-thrombosis-symptoms/<int:pk>/', api_views.AssessmentSymptomUpdateAPIView.as_view(),

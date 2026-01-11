@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-^-zp=%g0xc$&fceo^ygay!%!6t_4s64+9=4#+@uhm06(47(_rp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "10.174.203.183"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "10.174.203.183", "web"]
 
 
 # Application definition
@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'wells.middleware.SessionMiddleware',
+    'wells.middleware.GuestSessionMiddleware',
 ]
 
 ROOT_URLCONF = 'wells_project.urls'

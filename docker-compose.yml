@@ -62,12 +62,15 @@ services:
       - REDIS_PORT=6379
       - SECURE_SSL_REDIRECT=False
       - USE_HTTPS=true
+      - ASYNC_SERVICE_URL=https://async_service:8444
     depends_on:
       postgres:
         condition: service_healthy
       minio:
         condition: service_healthy
       redis:
+        condition: service_started
+      async_service:
         condition: service_started
     volumes:
       - .:/app
@@ -91,6 +94,42 @@ services:
                      echo '=== Запуск в режиме HTTP ===' &&
                      echo 'Запуск Gunicorn на порту 8000 (HTTP)...' &&
                      exec gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 wells_project.wsgi:application;
+                   fi"
+
+  async_service:
+    build:
+      context: ./async_service
+      dockerfile: Dockerfile
+    container_name: wells_async_service
+    ports:
+      - "8001:8001"
+      - "8444:8444"
+    environment:
+      - DJANGO_SERVICE_URL=http://web:8000
+      - DJANGO_USE_HTTPS=true
+      - API_TOKEN=secret123
+      - ASYNC_SERVICE_PORT=8001
+      - ASYNC_SERVICE_HTTPS_PORT=8444
+      - USE_HTTPS=true
+    volumes:
+      - ./async_service:/app
+      - ./async_service/keys:/app/keys
+    command: >
+            sh -c "if [ \"$$USE_HTTPS\" = \"true\" ] || [ \"$$USE_HTTPS\" = \"1\" ]; then
+                     echo '=== Запуск async_service в режиме HTTPS ===' &&
+                     mkdir -p /app/keys &&
+                     if [ ! -f /app/keys/async_cert.pem ] || [ ! -f /app/keys/async_key.pem ]; then
+                       echo 'SSL сертификаты не найдены. Генерация...' &&
+                       python /app/generate_cert.py;
+                     else
+                       echo 'SSL сертификаты уже существуют.';
+                     fi &&
+                     echo 'Запуск uvicorn на порту 8444 (HTTPS)...' &&
+                     exec uvicorn main:app --host 0.0.0.0 --port 8444 --ssl-keyfile /app/keys/async_key.pem --ssl-certfile /app/keys/async_cert.pem;
+                   else
+                     echo '=== Запуск async_service в режиме HTTP ===' &&
+                     echo 'Запуск uvicorn на порту 8001 (HTTP)...' &&
+                     exec uvicorn main:app --host 0.0.0.0 --port 8001;
                    fi"
 
 volumes:

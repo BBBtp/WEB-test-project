@@ -1,4 +1,5 @@
 import uuid
+import requests
 
 import redis
 from rest_framework import status, permissions
@@ -40,6 +41,7 @@ class IsModerator(permissions.BasePermission):
     summary="Список симптомов",
     parameters=[
         OpenApiParameter(name='search', description='Поиск по названию', required=False, type=str),
+        OpenApiParameter(name='recently_viewed', description='Фильтр по недавно просмотренным (true/false)', required=False, type=bool),
     ],
 )
 class ClinicalSymptomListAPIView(ListAPIView):
@@ -54,6 +56,25 @@ class ClinicalSymptomListAPIView(ListAPIView):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
+        # Фильтрация по недавно просмотренным (только для неавторизованных пользователей)
+        recently_viewed = self.request.query_params.get('recently_viewed', None)
+        if recently_viewed and recently_viewed.lower() == 'true' and not self.request.user.is_authenticated:
+            from .guest_session_utils import get_viewed_symptoms
+            guest_session_id = getattr(self.request, 'guest_session_id', None)
+            if guest_session_id:
+                viewed_symptom_ids = get_viewed_symptoms(guest_session_id)
+                if viewed_symptom_ids:
+                    # Фильтруем по просмотренным симптомам, сохраняя порядок просмотра
+                    # Создаем словарь для сохранения порядка
+                    order_dict = {symptom_id: idx for idx, symptom_id in enumerate(viewed_symptom_ids)}
+                    queryset = queryset.filter(id__in=viewed_symptom_ids)
+                    # Сортируем по порядку просмотра (последние просмотренные первыми)
+                    queryset = sorted(queryset, key=lambda x: order_dict.get(x.id, 999), reverse=True)
+                    return queryset
+                else:
+                    # Если нет просмотренных симптомов, возвращаем пустой queryset
+                    return queryset.none()
+
         return queryset.order_by('name')
 
 
@@ -62,6 +83,19 @@ class ClinicalSymptomDetailAPIView(RetrieveAPIView):
     """GET /api/symptoms/{id}/ - Одна запись симптома"""
     serializer_class = ClinicalSymptomSerializer
     queryset = ClinicalSymptom.objects.filter(is_active=True)
+    
+    def retrieve(self, request, *args, **kwargs):
+        # Получаем объект симптома
+        instance = self.get_object()
+        
+        # Если пользователь не авторизован, добавляем симптом в просмотренные
+        if not request.user.is_authenticated:
+            from .guest_session_utils import add_viewed_symptom
+            guest_session_id = getattr(request, 'guest_session_id', None)
+            if guest_session_id:
+                add_viewed_symptom(guest_session_id, instance.id)
+        
+        return super().retrieve(request, *args, **kwargs)
 
 
 @extend_schema(tags=["Symptoms"], summary="Создать симптом")
@@ -310,16 +344,43 @@ def complete_assessment(request, assessment_id):
         else:
             assessment.status = RiskAssessment.Status.REJECTED
 
-        assessment.calculate_risk_level()
+        # Проверяем, был ли уже выполнен асинхронный расчет
+        # Если result_value отсутствует, запускаем асинхронный расчет
+        if assessment.result_value is None:
+            # Запускаем асинхронный расчет через async_service
+            total_score = assessment.total_score
+            import os
+            async_service_url = os.getenv('ASYNC_SERVICE_URL', 'https://async_service:8444')
+            if not async_service_url.endswith('/calculate'):
+                async_service_url = f"{async_service_url}/calculate"
+            
+            payload = {
+                "assessment_id": assessment_id,
+                "total_score": total_score
+            }
+            
+            try:
+                # Отправляем запрос в асинхронный сервис (не ждем результата)
+                import urllib3
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                requests.post(async_service_url, json=payload, timeout=1, verify=False)
+            except requests.exceptions.RequestException:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # Если расчет уже был выполнен, используем существующие значения
+            # risk_level и recommendation уже должны быть установлены асинхронным сервисом
+            pass
+
         assessment.moderator = request.user
         assessment.completion_date = timezone.now()
         assessment.save(
-            update_fields=["status", "moderator", "completion_date", "risk_level", "recommendation",])
+            update_fields=["status", "moderator", "completion_date", "risk_level", "recommendation", "result_value"])
 
         return Response({
             'message': f'Оценка риска ТГВ/ТЭЛА {action}',
             'status': assessment.get_status_display(),
-            'risk_level': assessment.get_risk_level_display()
+            'risk_level': assessment.get_risk_level_display() if assessment.risk_level else None,
+            'calculation_status': 'async_started' if assessment.result_value is None else 'already_calculated'
         })
 
     except Exception as e:
@@ -546,3 +607,133 @@ def get_active_users_with_sessions(request):
         return Response({
             'error': f'Ошибка получения активных сессий: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Константа для проверки API токена (8 байт)
+API_TOKEN = "secret123"
+
+
+@extend_schema(
+    tags=["Assessments"],
+    summary="Запустить асинхронный расчет risk_level",
+    description="Отправляет запрос в асинхронный сервис для расчета risk_level и recommendation на основе total_score"
+)
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def start_async_calculation(request, assessment_id):
+    """
+    POST /api/deep-vein-thrombosis/{id}/calculate/ - Запуск асинхронного расчета risk_level
+    
+    Получает total_score из заявки и отправляет запрос в асинхронный сервис.
+    Возвращает 202 Accepted, так как расчет выполняется асинхронно.
+    """
+    try:
+        # Получаем заявку
+        assessment = get_object_or_404(
+            RiskAssessment,
+            id=assessment_id,
+            patient=request.user
+        )
+        
+        # Получаем total_score (вычисляемое свойство)
+        total_score = assessment.total_score
+        
+        # URL асинхронного сервиса
+        # Используем переменную окружения или имя контейнера Docker
+        import os
+        async_service_url = os.getenv('ASYNC_SERVICE_URL', 'http://async_service:8001')
+        if not async_service_url.endswith('/calculate'):
+            async_service_url = f"{async_service_url}/calculate"
+        
+        # Отправляем запрос в асинхронный сервис
+        # Используем requests.post() в синхронном режиме, так как это Django view
+        # Асинхронный сервис сам обработает задачу асинхронно
+        payload = {
+            "assessment_id": assessment_id,
+            "total_score": total_score
+        }
+        
+        try:
+            # Для работы с self-signed сертификатами отключаем проверку SSL
+            # В production это должно быть настроено правильно
+            import urllib3
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            response = requests.post(async_service_url, json=payload, timeout=1, verify=False)
+            # Не ждем ответа, так как расчет выполняется асинхронно
+        except requests.exceptions.RequestException:
+            # Игнорируем ошибки подключения, так как сервис может быть недоступен
+            # или обрабатывает запрос асинхронно
+            pass
+        
+        return Response({
+            'message': 'Расчет запущен асинхронно',
+            'assessment_id': assessment_id,
+            'total_score': total_score,
+            'status': 'processing'
+        }, status=status.HTTP_202_ACCEPTED)
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(
+    tags=["Assessments"],
+    summary="Принять результат от асинхронного сервиса",
+    description="Принимает результат расчета от асинхронного сервиса. Требует заголовок X-API-TOKEN для авторизации."
+)
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])  # Разрешаем доступ без аутентификации, но проверяем токен
+def receive_calculation_result(request, assessment_id):
+    """
+    POST /api/deep-vein-thrombosis/{id}/result/ - Прием результата от асинхронного сервиса
+    
+    Проверяет заголовок X-API-TOKEN и обновляет поля result_value, risk_level, recommendation.
+    """
+    # Проверка заголовка X-API-TOKEN
+    api_token = request.META.get('HTTP_X_API_TOKEN')
+    
+    if api_token != API_TOKEN:
+        return Response(
+            {'error': 'Неверный API токен'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    try:
+        # Получаем заявку
+        assessment = get_object_or_404(RiskAssessment, id=assessment_id)
+        
+        # Получаем данные из запроса
+        result_value = request.data.get('result_value')
+        risk_level = request.data.get('risk_level')
+        recommendation = request.data.get('recommendation')
+        
+        # Валидация данных
+        if result_value is None or risk_level is None or recommendation is None:
+            return Response(
+                {'error': 'Отсутствуют обязательные поля: result_value, risk_level, recommendation'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Проверка допустимых значений risk_level
+        valid_risk_levels = [choice[0] for choice in RiskAssessment.RiskLevel.choices]
+        if risk_level not in valid_risk_levels:
+            return Response(
+                {'error': f'Неверное значение risk_level. Допустимые: {valid_risk_levels}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Обновляем поля заявки
+        assessment.result_value = result_value
+        assessment.risk_level = risk_level
+        assessment.recommendation = recommendation
+        assessment.save(update_fields=['result_value', 'risk_level', 'recommendation'])
+        
+        return Response({
+            'message': 'Результат успешно обновлен',
+            'assessment_id': assessment_id,
+            'result_value': result_value,
+            'risk_level': risk_level
+        })
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

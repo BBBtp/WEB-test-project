@@ -65,6 +65,13 @@ class RiskAssessment(models.Model):
     )
     recommendation = models.TextField(blank=True,null = True, verbose_name="Рекомендации")
     comment = models.TextField(blank=True,null = True, verbose_name="Комментарий")
+    result_value = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Результат вычисления"
+    )
     formation_date = models.DateTimeField(null=True, blank=True, verbose_name="Дата формирования")
     completion_date = models.DateTimeField(null=True, blank=True, verbose_name="Дата завершения")
     moderator = models.ForeignKey(

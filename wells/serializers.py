@@ -63,7 +63,7 @@ class RiskAssessmentSerializer(serializers.ModelSerializer):
         model = RiskAssessment
         fields = [
             'id', 'patient', 'patient_username', 'status', 'risk_level',
-            'topic', 'recommendation', 'comment', 'formation_date',
+            'topic', 'recommendation', 'comment', 'result_value', 'formation_date',
             'completion_date', 'moderator', 'moderator_username',
             'created_at', 'total_score', 'assessment_symptoms'
         ]
@@ -103,8 +103,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined']
-        read_only_fields = ['id', 'date_joined']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined', 'is_staff']
+        read_only_fields = ['id', 'date_joined', 'is_staff']
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
