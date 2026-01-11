@@ -327,6 +327,37 @@
 					"response": []
 				},
 				{
+					"name": "List Recently Viewed Symptoms",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/symptoms/?recently_viewed=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"symptoms",
+								""
+							],
+							"query": [
+								{
+									"key": "recently_viewed",
+									"value": "true"
+								}
+							]
+						},
+						"description": "Получить список недавно просмотренных симптомов для гостевой сессии. Работает только для неавторизованных пользователей. Требует cookie guest_session_id."
+					},
+					"response": []
+				},
+				{
 					"name": "Get Symptom Detail",
 					"request": {
 						"method": "GET",
@@ -771,6 +802,76 @@
 					"response": []
 				},
 				{
+					"name": "Start Async Calculation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-CSRFToken",
+								"value": "{{csrftoken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Auth-Token",
+								"value": "{{rsa_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/deep-vein-thrombosis/1/calculate/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"deep-vein-thrombosis",
+								"1",
+								"calculate",
+								""
+							]
+						},
+						"description": "Запускает асинхронный расчет risk_level и recommendation. Возвращает 202 Accepted. Расчет выполняется в фоне 5-10 секунд."
+					},
+					"response": []
+				},
+				{
+					"name": "Receive Calculation Result",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-TOKEN",
+								"value": "secret123"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"result_value\": 10.5,\n  \"risk_level\": \"high\",\n  \"recommendation\": \"Высокая вероятность ТГВ/ТЭЛА (более 60%). Срочная консультация специалиста и начало антикоагулянтной терапии.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/deep-vein-thrombosis/1/result/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"deep-vein-thrombosis",
+								"1",
+								"result",
+								""
+							]
+						},
+						"description": "Принимает результат от асинхронного сервиса. Требует заголовок X-API-TOKEN: secret123. Используется async_service для отправки результата обратно в Django."
+					},
+					"response": []
+				},
+				{
 					"name": "Delete Assessment",
 					"request": {
 						"method": "DELETE",
@@ -881,6 +982,61 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Async Service",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{async_service_url}}/health",
+							"host": [
+								"{{async_service_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Проверка работоспособности асинхронного сервиса"
+					},
+					"response": []
+				},
+				{
+					"name": "Calculate Risk Level",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"assessment_id\": 1,\n  \"total_score\": 5\n}"
+						},
+						"url": {
+							"raw": "{{async_service_url}}/calculate",
+							"host": [
+								"{{async_service_url}}"
+							],
+							"path": [
+								"calculate"
+							]
+						},
+						"description": "Прямой запрос к асинхронному сервису для расчета risk_level. Принимает assessment_id и total_score. Выполняет расчет с задержкой 5-10 секунд и отправляет результат обратно в Django."
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -911,6 +1067,11 @@
 			"value": "http://localhost:8000"
 		},
 		{
+			"key": "async_service_url",
+			"value": "http://localhost:8001",
+			"description": "URL асинхронного сервиса (FastAPI)"
+		},
+		{
 			"key": "rsa_token",
 			"value": "",
 			"description": "RSA токен аутентификации. Автоматически сохраняется при успешном логине."
@@ -919,6 +1080,11 @@
 			"key": "csrftoken",
 			"value": "",
 			"description": "CSRF токен (автоматически получается из cookie csrftoken)"
+		},
+		{
+			"key": "api_token",
+			"value": "secret123",
+			"description": "API токен для обратного вызова от async_service (8 байт, константа)"
 		}
 	]
 }
