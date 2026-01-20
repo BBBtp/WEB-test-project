@@ -26,7 +26,15 @@ SECRET_KEY = 'django-insecure-^-zp=%g0xc$&fceo^ygay!%!6t_4s64+9=4#+@uhm06(47(_rp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "10.174.203.183", "web"]
+ALLOWED_HOSTS = ["*"]
+#TODO: Поменяй тут на свой zeroIP
+CSRF_TRUSTED_ORIGINS = [
+    "https://10.174.203.183:5173",
+    "http://10.174.203.183:5173",
+    "https://10.174.203.183:8443",
+    "http://localhost:5173",
+    "https://localhost:5173",
+]
 
 
 # Application definition
@@ -197,14 +205,7 @@ SPECTACULAR_SETTINGS = {
     }
 }
 
-# CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://localhost:5173",
-    "https://127.0.0.1:5173",
-]
-
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # HTTPS settings
