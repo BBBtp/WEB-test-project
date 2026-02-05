@@ -228,6 +228,8 @@ MINIO_SECURE = False
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", 6379)
+# Redis DB для гостевых сессий (по умолчанию как основная Redis DB)
+GUEST_REDIS_DB = int(os.getenv("GUEST_REDIS_DB", "0"))
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'

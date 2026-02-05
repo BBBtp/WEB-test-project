@@ -13,7 +13,7 @@ import redis
 guest_session_storage = redis.StrictRedis(
     host=settings.REDIS_HOST,
     port=settings.REDIS_PORT,
-    db=2  # Используем отдельную БД для гостевых сессий
+    db=settings.GUEST_REDIS_DB  # БД для гостевых сессий (настраивается)
 )
 
 # Время жизни гостевой сессии (20 минут в секундах)
